@@ -1,6 +1,12 @@
+// tailwind.config.js
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss";
 
-const config: Config = {
+const config: {
+  plugins: (plugin | ((options?: Partial<{ strategy: "base" | "class" }>) => { handler: () => void }))[];
+  theme: { extend: { colors: { background: string; foreground: string } } };
+  content: string[]
+} = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -14,6 +20,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/forms')],
 };
+
 export default config;
