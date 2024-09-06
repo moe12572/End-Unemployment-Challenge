@@ -38,3 +38,15 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
+## Q/A Section
+## Authentication Design
+
+To handle authentication securely and at scale, we'll use services like AWS Amplify. It provides built-in features for multi-factor authentication, social logins, and secure user management, so we don't have to reinvent the wheel. For handling sessions, we’d use JWT tokens, which are lightweight and work well with high-traffic apps. Encryption for user data, both in transit and at rest, will be prioritized for added security.
+
+## Scalable Search Functionality
+
+Search will be powered by efficient backend services like Elasticsearch ensuring fast, relevant results even at scale. On the frontend, we’ll use techniques like input debouncing to reduce server load, and caching to improve performance. These tools help handle large amounts of data without sacrificing speed. If needed, AWS services like Elasticsearch can be used for seamless integration.
+
+## Monitoring and Maintenance
+
+For monitoring, we’ll use Sentry to track errors and AWS CloudWatch to keep an eye on infrastructure health. Additionally, Mixpanel will help us understand user behavior and make informed improvements. With these tools, we'll ensure smooth operations and quickly catch any potential issues.
