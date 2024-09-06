@@ -21,9 +21,10 @@ const navigation = [
   { name: 'Deployments', href: '#', icon: RocketLaunchIcon, current: true },
 ];
 
-function classNames(...classes) {
+function classNames(...classes: (string | boolean | undefined | null)[]) {
   return classes.filter(Boolean).join(' ');
 }
+
 
 export default function Deployments() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
