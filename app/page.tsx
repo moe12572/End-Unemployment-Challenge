@@ -29,8 +29,8 @@ export default function Deployments() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedLaunch, setSelectedLaunch] = useState(null); // Track selected launch
   const [searchTerm, setSearchTerm] = useState('');
-  const [limit, setLimit] = useState(20); // Limit of launches to load initially
-  const [offset, setOffset] = useState(0); // Offset for pagination
+  const [limit] = useState(20); // Limit of launches to load initially
+  const [offset] = useState(0); // Offset for pagination
   const [launches, setLaunches] = useState([]); // To store loaded launches
   const [loadingMore, setLoadingMore] = useState(false); // Track loading more launches
   const [hasMore, setHasMore] = useState(true); // Track if there's more data to load
