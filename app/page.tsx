@@ -1,41 +1,92 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react';
 import {
   Bars3Icon,
   RocketLaunchIcon,
-  ArrowRightIcon,
-} from '@heroicons/react/24/outline'
-import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
+} from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { useQuery } from '@apollo/client';
 import { GET_LAUNCHES } from '../graphql/queries';
 import Lottie from 'lottie-react';
-import loadingAnimation from '../public/loading.json'
+import loadingAnimation from '../public/loading.json';
 import Drawer from "@/app/components/Drawer";
-import {format} from 'date-fns';
-import {ChevronRightIcon} from "@heroicons/react/16/solid";  // Optional for date formatting
-
+import { format } from 'date-fns';
+import { ChevronRightIcon } from "@heroicons/react/16/solid";
+import debounce from 'lodash.debounce';
 
 const navigation = [
   { name: 'Deployments', href: '#', icon: RocketLaunchIcon, current: true },
-]
+];
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
+  return classes.filter(Boolean).join(' ');
 }
 
 export default function Deployments() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedLaunch, setSelectedLaunch] = useState(null); // Track selected launch
-  const { loading, error, data } = useQuery(GET_LAUNCHES);
   const [searchTerm, setSearchTerm] = useState('');
+  const [limit, setLimit] = useState(20); // Limit of launches to load initially
+  const [offset, setOffset] = useState(0); // Offset for pagination
+  const [launches, setLaunches] = useState([]); // To store loaded launches
+  const [loadingMore, setLoadingMore] = useState(false); // Track loading more launches
+  const [hasMore, setHasMore] = useState(true); // Track if there's more data to load
+
+  const { loading, error, data, fetchMore } = useQuery(GET_LAUNCHES, {
+    variables: { limit, offset, order: 'ASC' }, // Ensure newest launches come first
+    notifyOnNetworkStatusChange: true,
+  });
+
+
   console.log(data)
+
   const selectLaunch = (launch) => {
     setSelectedLaunch(launch);  // Set the selected launch
     setSidebarOpen(true);       // Open the drawer
   };
 
-  if (loading) {
+  const loadMoreLaunches = () => {
+    if (loadingMore || !hasMore) return; // Prevent multiple requests at once or if no more data
+    setLoadingMore(true);
+
+    fetchMore({
+      variables: {
+        offset: launches.length, // Use the current length of loaded launches as the new offset
+      },
+    }).then(({ data }) => {
+      if (data.launches.length === 0) {
+        setHasMore(false); // If no new launches, set hasMore to false
+      } else {
+        setLaunches([...launches, ...data.launches]); // Append the new launches to the existing ones
+      }
+      setLoadingMore(false);
+    }).catch(() => {
+      setLoadingMore(false); // Handle error
+    });
+  };
+
+  // Debounce the scroll event handler to limit how often it fires
+  const handleScroll = debounce(() => {
+    if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 200) {
+      loadMoreLaunches();
+    }
+  }, 300);
+
+  useEffect(() => {
+    if (data) {
+      setLaunches(data.launches); // Set initial launches
+    }
+  }, [data]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
+
+  if (loading && !launches.length) {
     return (
         <div className="flex items-center justify-center h-screen">
           <Lottie animationData={loadingAnimation} style={{ width: 200, height: 200 }} />
@@ -51,7 +102,7 @@ export default function Deployments() {
     );
   }
 
-  const filteredLaunches = data.launches.filter((launch) =>
+  const filteredLaunches = launches.filter((launch) =>
       launch.mission_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -138,13 +189,18 @@ export default function Deployments() {
                                     ? format(new Date(launch.launch_date_local), 'MM-dd-yyyy')
                                     : 'N/A'}
                               </div>
-                              <ChevronRightIcon className="h-5 w-5 text-gray-400 ml-2" aria-hidden="true"/>
+                              <ChevronRightIcon className="h-5 w-5 text-gray-400 ml-2" aria-hidden="true" />
                             </div>
                           </div>
                         </li>
-
                     ))}
                   </ul>
+                  {loadingMore && (
+                      <div className="flex items-center justify-center py-4">
+                        <Lottie animationData={loadingAnimation} style={{ width: 50, height: 50 }} />
+                        <p className="text-gray-500 ml-2">Loading more...</p>
+                      </div>
+                  )}
                 </div>
               </div>
             </main>
